@@ -1,15 +1,15 @@
 import express from "express";
-import connectDB from "../config/db.config.js";
+import mongoose from "mongoose";
 import dotenv from "dotenv";
+import redisClient from "../config/redis.config.js";
 
-const app = express();
 dotenv.config();
-const PORT = process.env.PORT || 5000;
-
-connectDB();
+const app = express();
 
 app.get("/", (req, res) => {
   res.json({ message: "Hello World!" });
 });
+
+
 
 export default app;

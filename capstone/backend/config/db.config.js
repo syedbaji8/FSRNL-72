@@ -2,11 +2,32 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 
 dotenv.config();
-//TODO=>run a for loop and make this function run 5 time as retry each having interval of 5 second
+
+const MAX_RETRIES = 5;
+const RETRY_INTERVAL_MS = 5000;
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 async function connectDB() {
-  await mongoose.connect(
-    "mongodb+srv://vikaskumar20012001_db_user:Vikas123@fsrnl-72.5x8k3ls.mongodb.net/project",
-  );
-  console.log("MongoDB Connected");
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      await mongoose.connect(process.env.MONGO_URL);
+      console.log("MongoDB Connected");
+      return;
+    } catch (err) {
+      console.error(
+        `MongoDB connection attempt ${attempt}/${MAX_RETRIES} failed: ${err.message}`,
+      );
+
+      if (attempt === MAX_RETRIES) {
+        console.error("All MongoDB connection attempts failed. Exiting.");
+        throw err;
+      }
+
+      console.log(`Retrying in ${RETRY_INTERVAL_MS / 1000}s...`);
+      await wait(RETRY_INTERVAL_MS);
+    }
+  }
 }
+
 export default connectDB;
